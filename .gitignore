@@ -3,3 +3,9 @@
 .kdev4/
 *.pyc
 *.swp
+venv
+build
+dist
+*.egg*
+.eggs*
+*cache*
