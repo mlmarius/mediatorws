@@ -315,7 +315,6 @@ class PlainDownloadTask(TaskBase):
 
     def __init__(self, url, **kwargs):
         super(PlainDownloadTask, self).__init__(self.LOGGER)
-        self.logger.info('**********  task created')
         self.url = url
         self._combiner = kwargs.get('combiner')
         self._timeout = kwargs.get('timeout')
@@ -327,7 +326,7 @@ class PlainDownloadTask(TaskBase):
     def __call__(self):
 
         query_url = self.url
-        opener = urllib2.build_opener(*url_handlers)
+        opener = urllib2.build_opener()
 
         try:
             with closing(connect(opener.open, query_url, None,
@@ -345,14 +344,10 @@ class PlainDownloadTask(TaskBase):
                         "code %d" % (query_url, fd.getcode()))
                 else:
                     # HTTP status code == 200
-                    self.logger.debug('we got a proper response')
                     content_type = fd.info().get('Content-Type')
                     content_type = content_type.split(';')[0]
-
                     if (self._combiner and
                             content_type == self._combiner.mimetype):
-
-                        self.logger.info('combner is combining...')
 
                         self.combined_size += self._combiner.combine(fd)
                         return self.combined_size
@@ -363,11 +358,11 @@ class PlainDownloadTask(TaskBase):
                             "content type '%s'" %
                             (query_url, content_type))
 
-
         except Exception as e:
             self.logger.error(e, exc_info=True)
 	
         self.logger.info('**********  task finished')
+        return 0
 
 
 class DownloadTask(TaskBase):

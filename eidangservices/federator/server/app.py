@@ -330,7 +330,7 @@ def main():
         # run local Flask WSGI server (not for production)
         if logger_configured:
             logger.info('Serving with local WSGI server.')
-        app.run(threaded=True, debug=True, port=args.port)
+        app.run(threaded=True, debug=True, port=args.port, host='0.0.0.0')
     else:
         try:
             from mod_wsgi import version # noqa

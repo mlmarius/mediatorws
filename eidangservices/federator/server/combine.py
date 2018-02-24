@@ -376,9 +376,14 @@ class VPVSCombiner(Combiner):
         if hasattr(ifd, 'geturl'):
             self.logger.info("combined %d bytes (%s) from %s" %
                              (size, self.mimetype, ifd.geturl()))
-
         return size
 
+    def dump(self, ofd, **kwargs):
+        """
+        Dump WFCatalog JSON data
+        """
+        if self.__data:
+            json.dump(self.__data, codecs.getwriter('utf-8')(ofd), **kwargs)
 
 class WFCatalogJSONCombiner(Combiner):
     """

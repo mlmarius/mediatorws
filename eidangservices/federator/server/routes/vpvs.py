@@ -40,6 +40,8 @@ from eidangservices.federator.server.combine import VPVSCombiner
 from multiprocessing.pool import ThreadPool
 import tempfile
 import os
+import urllib
+import datetime
 
 class VPVSResource(general_request.GeneralResource):
 
@@ -53,14 +55,10 @@ class VPVSResource(general_request.GeneralResource):
     def get(self, args):
         # request.method == 'GET'
 
-        s = schema.VPVSSchema()
-        args = s.dump(args).data
-        self.logger.debug('VPVSSchema (serialized): %s' % args)
+        # serialize objects
+	
+        # self.logger.debug('VPVSSchema (serialized): %s' % args.data)
 
-        def start_thread():
-            logging.info('Now starting to download')
-
-        thread_pool = ThreadPool(processes=4, initializer=start_thread)
         
         bytes_fetched = []
        
@@ -69,13 +67,25 @@ class VPVSResource(general_request.GeneralResource):
                     'http://webservices.ingv.it/ingvws/nfo_taboo/vpvs/1/query' # INGV NFO
                 ]
 
+        for key in ['maxtime', 'mintime']:
+            if args.data.get(key) and isinstance(args.data[key], datetime.datetime):
+                args.data[key] = args.data[key].isoformat()+'.00'
+
         combiner = VPVSCombiner()
 
+        def start_thread():
+            logging.info('Now starting to download')
+            return
+
+        thread_pool = ThreadPool(processes=4, initializer=start_thread)
+
         for node in nodes:
+            url = urllib.urlencode(args.data)
+            self.logger.debug('*** adding url %s' % url)
+            
             thread_pool.apply_async(
-                    PlainDownloadTask("%s?%s" % (node, query), combiner=combiner),
-                    callback=bytes_fetched.append) 
-        
+                PlainDownloadTask("%s?%s" % (node, url), combiner=combiner)) 
+            
         thread_pool.close()
         thread_pool.join()
     
@@ -84,6 +94,7 @@ class VPVSResource(general_request.GeneralResource):
             with open(tmp, 'wb') as fd:
                 combiner.dump(fd)
         except Exception:
+	    self.logger.error('Could not prepare result', exc_info=True)
             os.remove(tmp)
             return "Could not prepare result"
         

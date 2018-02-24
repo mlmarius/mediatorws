@@ -581,13 +581,34 @@ class VPVSSchema(ServiceSchema):
     maxtime = FDSNWSDateTime(format='fdsnws', required=True)
 
     # geographic (rectangular spatial) options
-    minlatitude = Latitude(load_from='minlat', required=True)
-    maxlatitude = Latitude(load_from='maxlat', required=True)
-    minlongitude = Longitude(load_from='minlon', required=True)
-    maxlongitude = Longitude(load_from='maxlon', required=True)
+    minlat = Latitude(load_from='minlat', required=True)
+    maxlat = Latitude(load_from='maxlat', required=True)
+    minlon = Longitude(load_from='minlon', required=True)
+    maxlon = Longitude(load_from='maxlon', required=True)
+    
+    maxherr = NotEmptyFloat()
+    mettype = NotEmptyFloat()
+    codetype = NotEmptyFloat()
+    maxverr = NotEmptyFloat()
+    DIV = NotEmptyFloat()
+    maxvpvserr = NotEmptyFloat()
+    minps = NotEmptyFloat()
+    maxeqdep = NotEmptyFloat()
+    maxgap =  NotEmptyFloat()
+    maxvpvspw = NotEmptyFloat()
+    minns = NotEmptyFloat()
+    vpvsmin = NotEmptyFloat()
+    minnp = NotEmptyFloat()
+    maxsw = NotEmptyFloat()
+    maxvpvssw = NotEmptyFloat()
+    maxpw = NotEmptyFloat()
+    mineqdep = NotEmptyFloat()
+    midi = NotEmptyFloat()
+    modtype = NotEmptyFloat()
+
 
     class Meta:
-        service = 'vpvs'
+        # service = 'vpvs'
         strict = True
 
 
