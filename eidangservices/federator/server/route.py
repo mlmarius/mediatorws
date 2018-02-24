@@ -309,6 +309,67 @@ class TaskBase(object):
 # class TaskBase
 
 
+class PlainDownloadTask(TaskBase):
+
+    LOGGER = 'flask.app.federator.plain_download'
+
+    def __init__(self, url, **kwargs):
+        super(PlainDownloadTask, self).__init__(self.LOGGER)
+        self.logger.info('**********  task created')
+        self.url = url
+        self._combiner = kwargs.get('combiner')
+        self._timeout = kwargs.get('timeout')
+        self._num_retries = kwargs.get('num_retries')
+        self._retry_wait = kwargs.get('retry_wait')
+        self._retry_lock = kwargs.get('retry_lock')
+        self.combined_size = 0
+
+    def __call__(self):
+
+        query_url = self.url
+        opener = urllib2.build_opener(*url_handlers)
+
+        try:
+            with closing(connect(opener.open, query_url, None,
+                                 self._timeout, self._num_retries,
+                                 self._retry_wait,
+                                 lock_url=self._retry_lock)) as fd:
+
+                if fd.getcode() in FDSN_NODATA_CODES:
+                    self.logger.info(
+                        "received no data from %s (HTTP status code: %d)" %
+                        (query_url, fd.getcode()))
+                elif fd.getcode() != 200:
+                    self.logger.warning(
+                        "getting data from %s failed with HTTP status "
+                        "code %d" % (query_url, fd.getcode()))
+                else:
+                    # HTTP status code == 200
+                    self.logger.debug('we got a proper response')
+                    content_type = fd.info().get('Content-Type')
+                    content_type = content_type.split(';')[0]
+
+                    if (self._combiner and
+                            content_type == self._combiner.mimetype):
+
+                        self.logger.info('combner is combining...')
+
+                        self.combined_size += self._combiner.combine(fd)
+                        return self.combined_size
+
+                    else:
+                        self.logger.warning(
+                            "getting data from %s failed: unsupported "
+                            "content type '%s'" %
+                            (query_url, content_type))
+
+
+        except Exception as e:
+            self.logger.error(e, exc_info=True)
+	
+        self.logger.info('**********  task finished')
+
+
 class DownloadTask(TaskBase):
 
     LOGGER = 'flask.app.federator.download'

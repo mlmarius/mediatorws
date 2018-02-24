@@ -567,4 +567,28 @@ class WFCatalogSchema(ServiceSchema):
 
 # class WfCatalogSchema
 
+class VPVSSchema(ServiceSchema):
+    """
+    VPVS webservice schema definition
+    """
+    format = fields.Str(
+        missing='json',
+        validate=validate.OneOf(['json']))
+    nodata = NoData()
+
+    # temporal options
+    mintime = FDSNWSDateTime(format='fdsnws', required=True)
+    maxtime = FDSNWSDateTime(format='fdsnws', required=True)
+
+    # geographic (rectangular spatial) options
+    minlatitude = Latitude(load_from='minlat', required=True)
+    maxlatitude = Latitude(load_from='maxlat', required=True)
+    minlongitude = Longitude(load_from='minlon', required=True)
+    maxlongitude = Longitude(load_from='maxlon', required=True)
+
+    class Meta:
+        service = 'vpvs'
+        strict = True
+
+
 # ---- END OF <schema.py> ----

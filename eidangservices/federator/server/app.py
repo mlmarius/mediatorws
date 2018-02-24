@@ -50,6 +50,7 @@ from eidangservices.federator.server.routes.dataselect import \
     DataselectResource
 from eidangservices.federator.server.routes.station import StationResource
 from eidangservices.federator.server.routes.wfcatalog import WFCatalogResource
+from eidangservices.federator.server.routes.vpvs import VPVSResource
 
 try:
     # Python 2.x
@@ -231,6 +232,11 @@ def setup_app(args):
     api.add_resource(WFCatalogWadlResource, "%s%s" %
                      (settings.FDSN_WFCATALOG_PATH,
                       settings.FDSN_WADL_METHOD_TOKEN))
+
+    # vpvs service endpoint
+    api.add_resource(VPVSResource, '%s%s' %
+                     (settings.VPVS_PATH,
+                      settings.VPVS_QUERY_METHOD_TOKEN))
 
     api.init_app(app)
 

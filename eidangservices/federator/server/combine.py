@@ -337,6 +337,49 @@ class MseedCombiner(Combiner):
 # class MseedCombiner
 
 
+class VPVSCombiner(Combiner):
+    """
+    An implementation of a JSON combiner combining *WFCatalog* data.
+    """
+
+    MIMETYPE = settings.MIMETYPE_JSON
+
+    def __init__(self, **kwargs):
+        path_pipe = kwargs.get('path_pipe')
+        super(VPVSCombiner, self).__init__(path_pipe)
+        self.__data = []
+
+    def combine(self, ifd, **kwargs):
+        """
+        Combine VPVS JSON data
+        """
+        stream_data = ''
+        size = 0
+
+        buf = ifd.read()
+        if not buf:
+            return
+        if isinstance(buf, bytes):
+            buf = buf.decode('utf-8')
+        # self.logger.info(buf)
+        size = len(buf)
+        # self.__data.extend(json.loads(buf))
+        self.__data = {'result': []}
+        try:
+            buf = json.loads(buf)
+            self.__data['result'] += buf['result']
+            self.add_buffer_size(size)
+        except Exception:
+            self.logger.warning('Could not combine results from %s' % ifd.geturl())
+            return 0
+
+        if hasattr(ifd, 'geturl'):
+            self.logger.info("combined %d bytes (%s) from %s" %
+                             (size, self.mimetype, ifd.geturl()))
+
+        return size
+
+
 class WFCatalogJSONCombiner(Combiner):
     """
     An implementation of a JSON combiner combining *WFCatalog* data.

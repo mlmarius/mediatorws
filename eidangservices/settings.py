@@ -477,6 +477,9 @@ FDSN_DATASELECT_PATH = '/fdsnws/dataselect/1/'
 FDSN_WFCATALOG_PATH = '/eidaws/wfcatalog/1/'
 FDSN_EVENT_PATH = '/fdsnws/event/1/'
 
+VPVS_PATH = '/vpvs/'
+VPVS_QUERY_METHOD_TOKEN = 'query'
+
 EIDA_ROUTING_PATH = '/eidaws/routing/1/'
 EIDA_STATIONLITE_PATH = '/routing/'
 
