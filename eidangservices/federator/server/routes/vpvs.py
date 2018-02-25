@@ -42,6 +42,8 @@ import tempfile
 import os
 import urllib
 import datetime
+from shapely import geometry
+
 
 class VPVSResource(general_request.GeneralResource):
 
@@ -61,30 +63,55 @@ class VPVSResource(general_request.GeneralResource):
 
         
         bytes_fetched = []
-       
-        nodes = [
-                    'http://vpvs.infp.ro/query',  # VRANCEA NFO
-                    'http://webservices.ingv.it/ingvws/nfo_taboo/vpvs/1/query' # INGV NFO
-                ]
+      
+	nodes = {
+		'ingv': {
+			'url': 'http://webservices.ingv.it/ingvws/nfo_taboo/vpvs/1/query',
+			'bbox': geometry.Polygon([
+                                (11.78, 43.95), (13.61, 43.95), (13.61, 42.8), (11.78, 42.8), (11.78, 43.95)
+                            ])
+		},
+		'niep': {
+			'url': 'http://vpvs.infp.ro/query',
+			'bbox': geometry.Polygon([   
+                                (19.50, 49.00), (30.00, 49.00), (30.00, 42.0), (19.50, 42.0), (19.50, 49.00)
+                            ])
+		}
+	} 
 
+	# convert datetimes to isoformat
         for key in ['maxtime', 'mintime']:
             if args.data.get(key) and isinstance(args.data[key], datetime.datetime):
                 args.data[key] = args.data[key].isoformat()+'.00'
 
+
+        searchArea = geometry.Polygon([
+            (args.data['minlon'], args.data['minlat']),
+            (args.data['maxlon'], args.data['maxlat']),
+            (args.data['maxlon'], args.data['minlat']),
+            (args.data['minlon'], args.data['maxlat']),
+        ])
+
+        self.logger.info(searchArea)
         combiner = VPVSCombiner()
 
         def start_thread():
-            logging.info('Now starting to download')
+            logging.info('Download task started')
             return
 
         thread_pool = ThreadPool(processes=4, initializer=start_thread)
 
-        for node in nodes:
-            url = urllib.urlencode(args.data)
-            self.logger.debug('*** adding url %s' % url)
+        for nodeid, node in nodes.items():
+            # only add NFOs that have data from within our search area
+            if not node['bbox'].intersects(searchArea):
+                continue
+
+            query = urllib.urlencode(args.data)
+            url = '%s?%s' % (node['url'], query)
+            self.logger.debug('+++ NFO[%s] +++ %s' % (nodeid, url))
             
             thread_pool.apply_async(
-                PlainDownloadTask("%s?%s" % (node, url), combiner=combiner)) 
+                PlainDownloadTask(url, combiner=combiner)) 
             
         thread_pool.close()
         thread_pool.join()
