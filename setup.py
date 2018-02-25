@@ -140,6 +140,7 @@ elif 'stationlite' == subsys:
         'future>=0.16.0',
         'intervaltree>=2.1',
         'marshmallow==3.0.0b4',
+        'shapely>=1.6.4.post1',
         'python-dateutil>=2.6.1',
         'requests>=2.18.4',
         'webargs>=1.8.1', ]
