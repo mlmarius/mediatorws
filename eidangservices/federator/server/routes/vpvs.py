@@ -92,11 +92,11 @@ class VPVSResource(general_request.GeneralResource):
             (args.data['minlon'], args.data['maxlat']),
         ])
 
-        self.logger.info(searchArea)
+        # self.logger.info(searchArea)
         combiner = VPVSCombiner()
 
         def start_thread():
-            logging.info('Download task started')
+            logging.info('Download worker started')
             return
 
         thread_pool = ThreadPool(processes=4, initializer=start_thread)
@@ -108,7 +108,7 @@ class VPVSResource(general_request.GeneralResource):
 
             query = urllib.urlencode(args.data)
             url = '%s?%s' % (node['url'], query)
-            self.logger.debug('+++ NFO[%s] +++ %s' % (nodeid, url))
+            self.logger.info('+++ NFO[%s] +++ %s' % (nodeid, url))
             
             thread_pool.apply_async(
                 PlainDownloadTask(url, combiner=combiner)) 
